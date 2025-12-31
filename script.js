@@ -1,3 +1,6 @@
+const music = document.getElementById("music");
+music.muted = false;
+music.volume = 1;
 const canvas = document.getElementById("fireworks");
 const ctx = canvas.getContext("2d");
 const btn = document.getElementById("startBtn");
