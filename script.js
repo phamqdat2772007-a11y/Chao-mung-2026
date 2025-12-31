@@ -1,67 +1,117 @@
-const canvas = document.getElementById("fireworks");
+const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const btn = document.getElementById("startBtn");
-const music = document.getElementById("music");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+window.onresize = () => {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+};
 
-let particles = [];
-let started = false;
+const stars = [];
+const rockets = [];
+const particles = [];
 
-// Các màu sắc đa dạng cho pháo hoa
-const colors = ["red", "yellow", "orange", "blue", "green", "purple", "pink", "cyan"];
+function rand(min, max) {
+    return Math.random() * (max - min) + min;
+}
 
-btn.addEventListener("click", () => {
-    if (!started) {
-        started = true;
-        btn.style.display = "none";
-        music.volume = 1;
-        music.play().catch(() => { alert("Bấm lại Play nếu nhạc chưa phát"); });
-        setInterval(createFirework, 400); // nhiều pháo hơn
-        animate();
-    }
-});
+// 🌟 SAO
+for (let i = 0; i < 300; i++) {
+    stars.push({
+        x: rand(0, canvas.width),
+        y: rand(0, canvas.height),
+        r: rand(0.3, 1.8),
+        a: rand(0.3, 1),
+        tw: rand(0.005, 0.02)
+    });
+}
 
-function createFirework() {
-    let x = Math.random() * canvas.width;
-    let y = Math.random() * canvas.height / 2;
+function drawStars() {
+    stars.forEach(s => {
+        s.a += s.tw;
+        if (s.a <= 0.3 || s.a >= 1) s.tw *= -1;
+        ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
 
-    let color = colors[Math.floor(Math.random() * colors.length)];
-    let size = Math.random() * 3 + 2;
+// 🚀 PHÁO BAY
+function launch() {
+    rockets.push({
+        x: rand(100, canvas.width - 100),
+        y: canvas.height,
+        vy: rand(-10, -13),
+        color: `hsl(${rand(0,360)},100%,60%)`
+    });
+}
 
-    for (let i = 0; i < 80; i++) {
+function explode(x, y, color) {
+    const shapes = ["circle", "heart", "star"];
+    const shape = shapes[Math.floor(Math.random() * shapes.length)];
+
+    for (let i = 0; i < 120; i++) {
+        let angle = Math.random() * Math.PI * 2;
+        let speed = rand(2, 6);
+
+        if (shape === "heart") {
+            angle = i * Math.PI / 60;
+            speed = 4;
+        }
+
         particles.push({
             x, y,
-            dx: (Math.random() - 0.5) * 8,
-            dy: (Math.random() - 0.5) * 8,
-            life: Math.random() * 80 + 50,
-            color: colors[Math.floor(Math.random() * colors.length)],
-            size: size
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: rand(60, 120),
+            color
         });
     }
 }
 
+// ✨ VÒNG LẶP
 function animate() {
-    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Vẽ các sao nhỏ trên bầu trời
-    for (let i = 0; i < 100; i++) {
-        ctx.fillStyle = "white";
-        ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1, 1);
-    }
+    drawStars();
+
+    rockets.forEach((r, i) => {
+        r.y += r.vy;
+        ctx.fillStyle = r.color;
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (r.y < canvas.height / 2) {
+            explode(r.x, r.y, r.color);
+            rockets.splice(i, 1);
+        }
+    });
 
     particles.forEach((p, i) => {
-        p.x += p.dx;
-        p.y += p.dy;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.05;
         p.life--;
         ctx.fillStyle = p.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
         ctx.fill();
         if (p.life <= 0) particles.splice(i, 1);
     });
 
     requestAnimationFrame(animate);
 }
+
+// ▶️ BẮT ĐẦU
+document.getElementById("startBtn").onclick = () => {
+    document.getElementById("music").play();
+    setInterval(launch, 600);
+    animate();
+    document.querySelector(".overlay").style.display = "none";
+};
