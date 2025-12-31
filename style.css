@@ -1,9 +1,10 @@
 body {
     margin: 0;
-    background: black;
+    background: radial-gradient(ellipse at bottom, #000022 0%, #000000 100%);
     overflow: hidden;
     text-align: center;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
+    color: white;
 }
 
 canvas {
@@ -14,12 +15,14 @@ canvas {
 
 .content {
     position: relative;
-    top: 100px;
+    top: 50px;
+    z-index: 10;
 }
 
 h1 {
     color: gold;
     font-size: 40px;
+    text-shadow: 0 0 10px #ff0;
 }
 
 button {
@@ -29,4 +32,6 @@ button {
     color: yellow;
     border-radius: 10px;
     border: none;
+    cursor: pointer;
+    text-shadow: 0 0 5px #000;
 }
