@@ -73,7 +73,7 @@ function explode(x, y, color) {
 
 // ✨ VÒNG LẶP
 function animate() {
-    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.fillStyle =  "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     drawStars();
